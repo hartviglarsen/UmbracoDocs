@@ -7,60 +7,77 @@ meta.Description: "Explanation of how handle the EditorModelEventManager Sending
 
 # EditorModel Events
 
-The `EditorModelEventManager` class is used to emit events that enable you to manipulate the model used by the backoffice before it is loaded into an editor. For example the SendingContentModel event fires right before a content item is loaded into the backoffice for editing. It is therefore the perfect event to use to set a default value for a particular property, or perhaps to hide a property/tab/Content App from a certain editor.
+The `EditorModelEventManager` class is used to emit events that enable you to manipulate the model used by the backoffice before it is loaded into an editor. For example the `SendingContentModel` event fires right before a content item is loaded into the backoffice for editing. It is therefore the perfect event to use to set a default value for a particular property or perhaps to hide a property/tab/Content App from a certain editor.
 
 ## Usage
 
-Example usage of the `EditorModelEventManager` '*SendingContentModel*' event - eg set the default PublishDate for a new NewsArticle to be today's date:
+Example usage of the `EditorModelEventManager`'s `SendingContentModel` event where we set the publish date of a new article to today's date.
 
 ```csharp
 using System;
 using System.Linq;
+using System.Web.Http.Filters;
 using Umbraco.Core;
 using Umbraco.Core.Composing;
 using Umbraco.Web.Editors;
+using Umbraco.Web.Models.ContentEditing;
 
 namespace My.Website
 {
     [RuntimeLevel(MinLevel = RuntimeLevel.Run)]
     public class SubscribeToEditorModelEventsComposer : ComponentComposer<SubscribeToEditorModelEvents>
     {
-    //this automatically adds the component to the Components collection of the Umbraco composition
+        // If you're unfamiliar with the concept of composer and components
+        // you can check the link below this code sample
     }
 
     public class SubscribeToEditorModelEvents : IComponent
     {
-        // initialize: runs once when Umbraco starts
+        // Initialize: runs once when Umbraco starts
         public void Initialize()
         {
             EditorModelEventManager.SendingContentModel += EditorModelEventManager_SendingContentModel;
         }
 
-        // terminate: runs once when Umbraco stops
+        // Terminate: runs once when Umbraco stops
         public void Terminate()
         {
-            //unsubscribe during shutdown
+            // Unsubscribe during shutdown
             EditorModelEventManager.SendingContentModel -= EditorModelEventManager_SendingContentModel;
         }
 
-    private void EditorModelEventManager_SendingContentModel(System.Web.Http.Filters.HttpActionExecutedContext sender, EditorModelEventArgs<Umbraco.Web.Models.ContentEditing.ContentItemDisplay> e)
+        private void EditorModelEventManager_SendingContentModel(
+            HttpActionExecutedContext sender, 
+            EditorModelEventArgs<ContentItemDisplay> e)
         {
-            // set a default value for a NewsArticle's PublishDate property, the editor can override this, but we will suggest it should be today's date
+            // We check the alias of the content type
+            // (document type) to make sure we are only
+            // performing our logic to a newsArticle
             if (e.Model.ContentTypeAlias == "newsArticle")
             {
-                //access the property you want to pre-populate
-                //in V8 each content item can have 'variations' - each variation is represented by the `ContentVariantDisplay` class.
-                //if your site uses variants, then you need to decide whether to set the default value for all variants or a specific variant
-                // eg. set by variant name:
+                // Following the release of Umbraco 8
+                // nodes can now have variants (multiple
+                // languages). If you only wish to set the 
+                // publish date on a specific variant/language
+                // you can get it like so:
                 // var variant = e.Model.Variants.FirstOrDefault(f => f.Name == "specificVariantName");
-                // OR loop through all the variants:
-                foreach (var variant in e.Model.Variants){
-                    //check if variant is a 'new variant' - we only want to set the default value when the content item is first created
-                    if (variant.State == ContentSavedState.NotCreated){
-                        // each variant has an IEnumerable of 'Tabs' (property groupings) and each of these contain an IEnumerable of `ContentPropertyDisplay` properties
-                        var pubDateProperty = variant.Tabs.SelectMany(f => f.Properties).FirstOrDefault(f => f.Alias.InvariantEquals("publishDate"));
-                        if (pubDateProperty!=null){
-                            // set default value of the publish date property if it exists
+                // and then perform the following logic on
+                // that particular node instead of using
+                // a loop like we do below
+                foreach (var variant in e.Model.Variants)
+                {
+                    // We check the state of the current variant to ensure that
+                    // we are only messing with new nodes - not existing, 
+                    // potentially published ones
+                    if (variant.State == ContentSavedState.NotCreated)
+                    {
+                        // Each variant has an IEnumerable of 'Tabs' (property groupings)
+                        // and each of these contain an IEnumerable of `ContentPropertyDisplay` properties
+                        var pubDateProperty = variant.Tabs.
+                            SelectMany(f => f.Properties)
+                            .FirstOrDefault(f => f.Alias.InvariantEquals("publishDate"));
+                        if (pubDateProperty != null){
+                            // Set default value of the publish date property if it exists
                             pubDateProperty.Value = DateTime.UtcNow;
                         }
                     }
@@ -70,6 +87,9 @@ namespace My.Website
     }
 }
 ```
+
+[Explanation of components and composers](../../../Implementation/Composing/index.md)
+
 ## Events
 
 <table>
