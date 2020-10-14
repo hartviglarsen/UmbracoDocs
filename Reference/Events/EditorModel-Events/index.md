@@ -7,7 +7,7 @@ meta.Description: "Documentation and examples of how you can customize the editi
 
 # EditorModel Events
 
-The `EditorModelEventManager` class is used to emit events that enable you to manipulate the model used by the backoffice before it is loaded into an editor. For example the `SendingContentModel` event fires right before a content item is loaded into the backoffice for editing. It is therefore the perfect event to use to set a default value for a particular property or perhaps to hide a property/tab/Content App from a certain editor.
+The `EditorModelEventManager` class is used to emit events that enable you to manipulate the model used by the Backoffice before it is loaded and shown to a content editor. For example the `SendingContentModel` event fires right before a content item (page) is loaded into the Backoffice for editing. It is therefore the perfect event to use to set a default value for a particular property or perhaps to hide a property/tab/Content App from a certain editor.
 
 ## Usage
 
