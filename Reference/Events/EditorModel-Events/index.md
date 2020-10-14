@@ -1,8 +1,8 @@
 ---
 keywords: EditorModelEventManager setting default values defaultvalue
 versionFrom: 8.0.0
-meta.Title: "EditorModel Events - or how to set a default value"
-meta.Description: "Explanation of how handle the EditorModelEventManager SendingContent event to set an initial default value for a propery when the editor creates a new content item in the backoffice"
+meta.Title: "EditorModel Events - customizing the editing experience"
+meta.Description: "Documentation and examples of how you can customize the editing experience by changing what is sent to the Backoffice"
 ---
 
 # EditorModel Events
